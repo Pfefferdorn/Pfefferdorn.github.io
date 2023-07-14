@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(to bottom, #56CCF2, #2F80ED);
+    }
+
+    h3 {
+      color: #ffffff;
+      margin-bottom: 20px;
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    form input[type="text"] {
+      padding: 10px;
+      width: 200px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    form button {
+      padding: 10px 20px;
+      background-color: #333333;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      background-color: #ffffff;
+    }
+
+    table th {
+      background-color: #333333;
+      color: #ffffff;
+      padding: 10px;
+    }
+
+    table td {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    table tr:last-child td {
+      border-bottom: none;
+    }
+
+    table tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    p {
+      margin: 0;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .card {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 20px;
+      background: linear-gradient(to bottom, #9ADFB4, #45B39D);
+    }
+    
+    .card h4 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+    
+    .card p {
+      margin-bottom: 5px;
+    }
+    
+    .error-message {
+      color: #ff0000;
+      margin-top: 5px;
+    }
+      
+    .toggle-container {
+      margin-bottom: 10px;
+    }
+    
+    .toggle-button {
+      display: inline-block;
+      padding: 5px 10px;
+      background-color: #333333;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+  <script>
+    function toggleTemperatureUnit() {
+      var temperatureElements = document.getElementsByClassName('temperature');
+      var toggleButton = document.getElementById('toggle-button');
+      
+      for (var i = 0; i < temperatureElements.length; i++) {
+        var temperature = temperatureElements[i];
+        
+        if (toggleButton.innerText === 'Switch to Fahrenheit') {
+          var celsius = temperature.innerText;
+          var fahrenheit = celsiusToFahrenheit(celsius);
+          temperature.innerText = fahrenheit + '°F';
+        } else {
+          var fahrenheit = temperature.innerText;
+          var celsius = fahrenheitToCelsius(fahrenheit);
+          temperature.innerText = celsius + '°C';
+        }
+      }
+      
+      toggleButton.innerText = toggleButton.innerText === 'Switch to Fahrenheit' ? 'Switch to Celsius' : 'Switch to Fahrenheit';
+    }    
+
+    function celsiusToFahrenheit(celsius) {
+      var celsiusValue = parseFloat(celsius);
+      var fahrenheitValue = (celsiusValue * 9 / 5) + 32;
+      return fahrenheitValue.toFixed(0);
+    }
+
+    function fahrenheitToCelsius(fahrenheit) {
+      var fahrenheitValue = parseFloat(fahrenheit);
+      var celsiusValue = (fahrenheitValue - 32) * 5 / 9;
+      return celsiusValue.toFixed(0);
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h3>Check the Weather</h3>
+    
+    <div class="toggle-container">
+      <button id="toggle-button" class="toggle-button" onclick="toggleTemperatureUnit()">Switch to Fahrenheit</button>
+    </div>
+    
+    <form name="demo_form.asp" method="post">
+      {% csrf_token %}
+      {{ form.name }}
+      <button type="submit">Add City</button>
+    </form>
+
+    {% for city_weather in weather_data %}
+    <div class="card">
+      <h4>{{ city_weather.city }}</h4>
+      <i class="weather-icon fas fa-cloud-sun"></i>
+      <p>Current Temperature: <strong class="temperature">{{ city_weather.temperature }}°C</strong></p>
+      <p>Feels Like: <strong class="temperature">{{ city_weather.temperature_feel }}°C</strong></p>
+      <p>Min: <strong class="temperature">{{ city_weather.temperature_min }}°C</strong> Max: <strong class="temperature">{{ city_weather.temperature_max }}°C</strong></p>
+      <p>
+        {{ city_weather.description }}
+        <span class="weather-icon">
+          {% if city_weather.icon %}
+            <img src="http://openweathermap.org/img/wn/{{ city_weather.icon }}.png" alt="Weather Icon">
+          {% endif %}
+        </span>
+      </p>
+      
+      <form action="{% url 'remove_city' city=city_weather.city %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="remove-button">Remove</button>
+      </form>
+    </div>
+    {% empty %}
+    <p>No cities added yet.</p>
+    {% endfor %}
+  </div>
+</body>
+</html>
